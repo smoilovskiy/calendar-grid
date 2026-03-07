@@ -1,9 +1,12 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import styled from '@emotion/styled';
 import { useHolidays } from '../../hooks/useHolidays';
 import { getCalendarDays, getDayNames } from '../../utils/calendar';
 import { getWeekStartForCountry } from '../../utils/weekStartByCountry';
 import { DayCell } from '../DayCell/DayCell';
+import { fetchTasks, createTask, updateTask, deleteTask } from '../../api/tasks';
+import type { Task } from '../../api/tasks';
+import { dateKey } from '../../utils/dateKey';
 
 const MONTH_NAMES = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -71,12 +74,62 @@ type CalendarGridProps = {
 export function CalendarGrid({ countryCode }: CalendarGridProps) {
   const weekStart = getWeekStartForCountry(countryCode);
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [tasks, setTasks] = useState<Task[]>([]);
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
   const { getHoliday } = useHolidays(year, countryCode);
 
   const dayNames = getDayNames(weekStart);
   const days = getCalendarDays(year, month, weekStart);
+
+  const dateFrom = dateKey(days[0]!.date);
+  const dateTo = dateKey(days[days.length - 1]!.date);
+
+  const loadTasks = useCallback(async () => {
+    try {
+      const list = await fetchTasks(dateFrom, dateTo);
+      setTasks(list);
+    } catch {
+      setTasks([]);
+    }
+  }, [dateFrom, dateTo]);
+
+  useEffect(() => {
+    loadTasks();
+  }, [loadTasks]);
+
+  const handleAddTask = useCallback(async (date: string, title: string) => {
+    try {
+      const created = await createTask(title, date, 0);
+      setTasks((prev) => [...prev, created]);
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  const handleUpdateTask = useCallback(async (id: string, data: { title?: string; date?: string; order?: number }) => {
+    try {
+      const updated = await updateTask(id, data);
+      setTasks((prev) => prev.map((t) => (t.id === id ? updated : t)));
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  const handleDeleteTask = useCallback(async (id: string) => {
+    try {
+      await deleteTask(id);
+      setTasks((prev) => prev.filter((t) => t.id !== id));
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  const tasksByDate = tasks.reduce<Record<string, Task[]>>((acc, t) => {
+    if (!acc[t.date]) acc[t.date] = [];
+    acc[t.date].push(t);
+    return acc;
+  }, {});
 
   const goPrevMonth = () => {
     setCurrentDate(new Date(year, month - 1));
@@ -103,7 +156,15 @@ export function CalendarGrid({ countryCode }: CalendarGridProps) {
           <DayHeader key={name}>{name}</DayHeader>
         ))}
         {days.map((day, index) => (
-          <DayCell key={index} day={day} holidayName={getHoliday(day.date)} />
+          <DayCell
+            key={index}
+            day={day}
+            holidayName={getHoliday(day.date)}
+            tasks={tasksByDate[dateKey(day.date)] ?? []}
+            onAddTask={handleAddTask}
+            onUpdateTask={handleUpdateTask}
+            onDeleteTask={handleDeleteTask}
+          />
         ))}
       </Grid>
     </Container>

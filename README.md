@@ -33,6 +33,18 @@ npm run dev
 - Frontend: http://localhost:5173
 - Backend API: http://localhost:3001
 
+For task persistence, set `DATABASE_URL` (PostgreSQL). If unset, the app runs but tasks are not saved (API returns 503).
+
+### Connecting Neon / Vercel Postgres (local backend)
+
+1. In [Vercel](https://vercel.com): open your project → **Storage** → **Create Database** → **Postgres** (Vercel Postgres is powered by Neon).
+2. After creation, open the database → **Connect** or **.env** tab and copy the connection string (e.g. `POSTGRES_URL` or `DATABASE_URL`).
+3. In the repo, create `server/.env` (see `server/.env.example`) and set:
+   ```env
+   DATABASE_URL=postgresql://...  # paste the copied URL
+   ```
+4. Restart the backend. The `tasks` table is created automatically on first run.
+
 ## Scripts
 
 ```bash
