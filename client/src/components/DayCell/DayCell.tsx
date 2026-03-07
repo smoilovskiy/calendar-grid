@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import styled from '@emotion/styled';
+import { useDroppable } from '@dnd-kit/core';
+import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import type { CalendarDay } from '../../utils/calendar';
 import type { Task } from '../../api/tasks';
-import { TaskCard } from '../TaskCard/TaskCard';
+import { SortableTaskCard } from '../TaskCard/SortableTaskCard';
 
 const Cell = styled.div<{ $isCurrentMonth: boolean }>`
   min-height: 100px;
@@ -34,10 +36,13 @@ const HolidayLabel = styled.div`
   white-space: nowrap;
 `;
 
-const TasksArea = styled.div`
+const TasksArea = styled.div<{ $isOver?: boolean }>`
   flex: 1;
   min-height: 0;
   margin-top: 6px;
+  min-height: 40px;
+  border-radius: 4px;
+  background: ${(p) => (p.$isOver ? 'var(--hover)' : 'transparent')};
 `;
 
 const AddTaskBtn = styled.button`
@@ -92,6 +97,9 @@ export function DayCell({
   const [newTitle, setNewTitle] = useState('');
   const dateKey = toDateKey(day.date);
 
+  const { setNodeRef, isOver } = useDroppable({ id: `cell-${dateKey}` });
+  const taskIds = tasks.map((t) => t.id);
+
   const submitAdd = () => {
     const t = newTitle.trim();
     if (t) {
@@ -109,17 +117,19 @@ export function DayCell({
         </DayNumber>
         {holidayName && <HolidayLabel title={holidayName}>{holidayName}</HolidayLabel>}
       </TopRow>
-      <TasksArea>
-        {tasks
-          .sort((a, b) => a.order - b.order)
-          .map((task) => (
-            <TaskCard
-              key={task.id}
-              task={task}
-              onUpdate={(id, data) => onUpdateTask(id, data)}
-              onDelete={onDeleteTask}
-            />
-          ))}
+      <TasksArea ref={setNodeRef} $isOver={isOver}>
+        <SortableContext items={taskIds} strategy={verticalListSortingStrategy}>
+          {tasks
+            .sort((a, b) => a.order - b.order)
+            .map((task) => (
+              <SortableTaskCard
+                key={task.id}
+                task={task}
+                onUpdate={(id, data) => onUpdateTask(id, data)}
+                onDelete={onDeleteTask}
+              />
+            ))}
+        </SortableContext>
         {adding ? (
           <AddTaskInput
             autoFocus

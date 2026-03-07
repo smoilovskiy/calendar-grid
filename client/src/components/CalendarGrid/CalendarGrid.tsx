@@ -1,5 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
 import styled from '@emotion/styled';
+import {
+  DndContext,
+  PointerSensor,
+  KeyboardSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core';
 import { useHolidays } from '../../hooks/useHolidays';
 import { getCalendarDays, getDayNames } from '../../utils/calendar';
 import { getWeekStartForCountry } from '../../utils/weekStartByCountry';
@@ -131,6 +139,37 @@ export function CalendarGrid({ countryCode }: CalendarGridProps) {
     return acc;
   }, {});
 
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(KeyboardSensor)
+  );
+
+  const handleDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      const { active, over } = event;
+      if (!over) return;
+      const draggedTask = active.data.current?.task as Task | undefined;
+      if (!draggedTask) return;
+
+      let targetDate: string;
+      let targetOrder: number;
+
+      if (String(over.id).startsWith('cell-')) {
+        targetDate = String(over.id).slice(5);
+        targetOrder = 0;
+      } else {
+        const targetTask = tasks.find((t) => t.id === over.id);
+        if (!targetTask) return;
+        targetDate = targetTask.date;
+        targetOrder = targetTask.order + 1;
+      }
+
+      if (draggedTask.date === targetDate && draggedTask.order === targetOrder) return;
+      handleUpdateTask(draggedTask.id, { date: targetDate, order: targetOrder });
+    },
+    [tasks, handleUpdateTask]
+  );
+
   const goPrevMonth = () => {
     setCurrentDate(new Date(year, month - 1));
   };
@@ -151,22 +190,24 @@ export function CalendarGrid({ countryCode }: CalendarGridProps) {
         </NavButton>
       </Header>
 
-      <Grid>
-        {dayNames.map((name) => (
-          <DayHeader key={name}>{name}</DayHeader>
-        ))}
-        {days.map((day, index) => (
-          <DayCell
-            key={index}
-            day={day}
-            holidayName={getHoliday(day.date)}
-            tasks={tasksByDate[dateKey(day.date)] ?? []}
-            onAddTask={handleAddTask}
-            onUpdateTask={handleUpdateTask}
-            onDeleteTask={handleDeleteTask}
-          />
-        ))}
-      </Grid>
+      <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+        <Grid>
+          {dayNames.map((name) => (
+            <DayHeader key={name}>{name}</DayHeader>
+          ))}
+          {days.map((day, index) => (
+            <DayCell
+              key={index}
+              day={day}
+              holidayName={getHoliday(day.date)}
+              tasks={tasksByDate[dateKey(day.date)] ?? []}
+              onAddTask={handleAddTask}
+              onUpdateTask={handleUpdateTask}
+              onDeleteTask={handleDeleteTask}
+            />
+          ))}
+        </Grid>
+      </DndContext>
     </Container>
   );
 }
