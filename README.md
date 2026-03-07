@@ -41,6 +41,11 @@ npm run dev:server   # backend only
 npm run build        # build both
 ```
 
+## Country and week start
+
+- **Country** (for holidays and week start): Initially from the browser locale (`navigator.language`, e.g. `en-US` → US). You can change it via the country dropdown; it controls which public holidays are shown ([Nager.Date API](https://date.nager.at/swagger/index.html)) and whether the week starts on Sunday or Monday.
+- **Week start** (Sunday vs Monday): Derived from the selected country via a hardcoded mapping (no API provides this). Sunday: e.g. US, CA, UK, Brazil, Japan, Korea, Israel, Australia; Monday: e.g. most of Europe (PL, UA, DE, FR), Russia, China.
+
 ## Project Structure
 
 ```

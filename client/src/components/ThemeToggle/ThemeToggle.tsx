@@ -2,9 +2,6 @@ import styled from '@emotion/styled';
 import { useTheme } from '../../theme/ThemeContext';
 
 const Button = styled.button`
-  position: fixed;
-  top: 16px;
-  right: 16px;
   padding: 8px 12px;
   font-size: 0.875rem;
   border: 1px solid var(--border);

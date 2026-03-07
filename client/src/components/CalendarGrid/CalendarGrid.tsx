@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import styled from '@emotion/styled';
-import { useWeekStart } from '../../hooks/useWeekStart';
+import { useHolidays } from '../../hooks/useHolidays';
 import { getCalendarDays, getDayNames } from '../../utils/calendar';
+import { getWeekStartForCountry } from '../../utils/weekStartByCountry';
 import { DayCell } from '../DayCell/DayCell';
 
 const MONTH_NAMES = [
@@ -63,11 +64,16 @@ const DayHeader = styled.div`
   color: var(--text);
 `;
 
-export function CalendarGrid() {
-  const weekStart = useWeekStart();
+type CalendarGridProps = {
+  countryCode: string;
+};
+
+export function CalendarGrid({ countryCode }: CalendarGridProps) {
+  const weekStart = getWeekStartForCountry(countryCode);
   const [currentDate, setCurrentDate] = useState(new Date());
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
+  const { getHoliday } = useHolidays(year, countryCode);
 
   const dayNames = getDayNames(weekStart);
   const days = getCalendarDays(year, month, weekStart);
@@ -97,7 +103,7 @@ export function CalendarGrid() {
           <DayHeader key={name}>{name}</DayHeader>
         ))}
         {days.map((day, index) => (
-          <DayCell key={index} day={day} />
+          <DayCell key={index} day={day} holidayName={getHoliday(day.date)} />
         ))}
       </Grid>
     </Container>
