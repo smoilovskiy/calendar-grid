@@ -77,9 +77,10 @@ const DayHeader = styled.div`
 
 type CalendarGridProps = {
   countryCode: string;
+  filterQuery: string;
 };
 
-export function CalendarGrid({ countryCode }: CalendarGridProps) {
+export function CalendarGrid({ countryCode, filterQuery }: CalendarGridProps) {
   const weekStart = getWeekStartForCountry(countryCode);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -201,6 +202,7 @@ export function CalendarGrid({ countryCode }: CalendarGridProps) {
               day={day}
               holidayName={getHoliday(day.date)}
               tasks={tasksByDate[dateKey(day.date)] ?? []}
+              filterQuery={filterQuery}
               onAddTask={handleAddTask}
               onUpdateTask={handleUpdateTask}
               onDeleteTask={handleDeleteTask}

@@ -76,6 +76,7 @@ type DayCellProps = {
   day: CalendarDay;
   holidayName?: string | null;
   tasks: Task[];
+  filterQuery: string;
   onAddTask: (date: string, title: string) => void;
   onUpdateTask: (id: string, data: { title?: string; date?: string; order?: number }) => void;
   onDeleteTask: (id: string) => void;
@@ -89,6 +90,7 @@ export function DayCell({
   day,
   holidayName,
   tasks,
+  filterQuery,
   onAddTask,
   onUpdateTask,
   onDeleteTask,
@@ -125,6 +127,7 @@ export function DayCell({
               <SortableTaskCard
                 key={task.id}
                 task={task}
+                filterQuery={filterQuery}
                 onUpdate={(id, data) => onUpdateTask(id, data)}
                 onDelete={onDeleteTask}
               />

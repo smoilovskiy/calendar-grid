@@ -3,6 +3,7 @@ import styled from '@emotion/styled';
 import { ThemeProvider } from './theme/ThemeContext';
 import { ThemeToggle } from './components/ThemeToggle/ThemeToggle';
 import { CountrySelect } from './components/CountrySelect/CountrySelect';
+import { FilterPopover } from './components/FilterPopover/FilterPopover';
 import { CalendarGrid } from './components/CalendarGrid/CalendarGrid';
 import { getCountryFromLocale } from './utils/locale';
 
@@ -18,14 +19,16 @@ const TopBar = styled.div`
 
 function App() {
   const [country, setCountry] = useState(getCountryFromLocale);
+  const [filterQuery, setFilterQuery] = useState('');
 
   return (
     <ThemeProvider>
       <TopBar>
         <CountrySelect value={country} onChange={setCountry} />
+        <FilterPopover value={filterQuery} onChange={setFilterQuery} />
         <ThemeToggle />
       </TopBar>
-      <CalendarGrid countryCode={country} />
+      <CalendarGrid countryCode={country} filterQuery={filterQuery} />
     </ThemeProvider>
   );
 }

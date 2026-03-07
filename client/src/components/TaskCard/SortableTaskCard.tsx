@@ -3,6 +3,7 @@ import styled from '@emotion/styled';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import type { Task } from '../../api/tasks';
+import { getHighlightSegments } from '../../utils/highlightMatch';
 
 const Card = styled.div<{ $isDragging?: boolean }>`
   padding: 6px 8px;
@@ -31,13 +32,21 @@ const Input = styled.input`
   color: var(--text);
 `;
 
+const Highlight = styled.mark`
+  background: #fef08a;
+  color: inherit;
+  padding: 0 1px;
+  border-radius: 2px;
+`;
+
 type SortableTaskCardProps = {
   task: Task;
+  filterQuery: string;
   onUpdate: (id: string, data: { title?: string }) => void;
   onDelete: (id: string) => void;
 };
 
-export function SortableTaskCard({ task, onUpdate, onDelete }: SortableTaskCardProps) {
+export function SortableTaskCard({ task, filterQuery, onUpdate, onDelete }: SortableTaskCardProps) {
   const [editing, setEditing] = useState(false);
   const [value, setValue] = useState(task.title);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -94,6 +103,8 @@ export function SortableTaskCard({ task, onUpdate, onDelete }: SortableTaskCardP
     );
   }
 
+  const segments = getHighlightSegments(task.title, filterQuery);
+
   return (
     <Card
       ref={setNodeRef}
@@ -107,7 +118,9 @@ export function SortableTaskCard({ task, onUpdate, onDelete }: SortableTaskCardP
       }}
       title="Drag to move, click to edit"
     >
-      {task.title}
+      {segments.map((seg, i) =>
+        seg.match ? <Highlight key={i}>{seg.text}</Highlight> : seg.text
+      )}
     </Card>
   );
 }
