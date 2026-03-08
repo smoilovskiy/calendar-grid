@@ -85,8 +85,8 @@ type DayCellProps = {
   holidayName?: string | null;
   tasks: Task[];
   filterQuery: string;
-  onAddTask: (date: string, title: string, description?: string) => void;
-  onUpdateTask: (id: string, data: { title?: string; date?: string; order?: number; description?: string }) => void;
+  onAddTask: (date: string, title: string, description?: string, labels?: string[]) => void;
+  onUpdateTask: (id: string, data: { title?: string; date?: string; order?: number; description?: string; labels?: string[] }) => void;
   onDeleteTask: (id: string) => void;
 };
 
@@ -116,13 +116,13 @@ export function DayCell({
     ? `${holidayName.slice(0, 20)}…`
     : holidayName ?? '';
 
-  const handleAddSubmit = (title: string, description: string) => {
-    onAddTask(dateKey, title, description || undefined);
+  const handleAddSubmit = (title: string, description: string, labels: string[]) => {
+    onAddTask(dateKey, title, description || undefined, labels);
   };
 
-  const handleEditSave = (title: string, description: string) => {
+  const handleEditSave = (title: string, description: string, labels: string[]) => {
     if (!editTask) return;
-    onUpdateTask(editTask.id, { title, description: description || undefined });
+    onUpdateTask(editTask.id, { title, description: description || undefined, labels });
     setEditTask(null);
   };
 

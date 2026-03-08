@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import styled from '@emotion/styled';
 import type { Task } from '../../api/tasks';
+import { LabelPicker } from '../LabelPicker/LabelPicker';
 
 const Overlay = styled.div`
   position: fixed;
@@ -117,19 +118,21 @@ const DeleteBtn = styled(Btn)`
 type EditTaskModalProps = {
   task: Task;
   onClose: () => void;
-  onSave: (title: string, description: string) => void;
+  onSave: (title: string, description: string, labels: string[]) => void;
   onDelete: () => void;
 };
 
 export function EditTaskModal({ task, onClose, onSave, onDelete }: EditTaskModalProps) {
   const [title, setTitle] = useState(task.title);
   const [description, setDescription] = useState(task.description ?? '');
+  const [labels, setLabels] = useState<string[]>(task.labels ?? []);
   const titleRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setTitle(task.title);
     setDescription(task.description ?? '');
-  }, [task.id, task.title, task.description]);
+    setLabels(task.labels ?? []);
+  }, [task.id, task.title, task.description, task.labels]);
 
   useEffect(() => {
     titleRef.current?.focus();
@@ -139,7 +142,7 @@ export function EditTaskModal({ task, onClose, onSave, onDelete }: EditTaskModal
     e.preventDefault();
     const t = title.trim();
     if (t) {
-      onSave(t, description.trim());
+      onSave(t, description.trim(), labels);
       onClose();
     }
   };
@@ -171,6 +174,7 @@ export function EditTaskModal({ task, onClose, onSave, onDelete }: EditTaskModal
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Optional description"
           />
+          <LabelPicker value={labels} onChange={setLabels} />
           <Actions>
             <LeftActions>
               <DeleteBtn type="button" onClick={handleDelete}>

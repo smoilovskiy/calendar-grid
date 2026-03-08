@@ -111,16 +111,16 @@ export function CalendarGrid({ countryCode, filterQuery }: CalendarGridProps) {
     loadTasks();
   }, [loadTasks]);
 
-  const handleAddTask = useCallback(async (date: string, title: string, description?: string) => {
+  const handleAddTask = useCallback(async (date: string, title: string, description?: string, labels?: string[]) => {
     try {
-      const created = await createTask(title, date, 0, description);
+      const created = await createTask(title, date, 0, description, labels);
       setTasks((prev) => [...prev, created]);
     } catch {
       // ignore
     }
   }, []);
 
-  const handleUpdateTask = useCallback(async (id: string, data: { title?: string; date?: string; order?: number; description?: string }) => {
+  const handleUpdateTask = useCallback(async (id: string, data: { title?: string; date?: string; order?: number; description?: string; labels?: string[] }) => {
     try {
       const updated = await updateTask(id, data);
       setTasks((prev) => prev.map((t) => (t.id === id ? updated : t)));

@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import styled from '@emotion/styled';
+import { LabelPicker } from '../LabelPicker/LabelPicker';
 
 const Overlay = styled.div`
   position: fixed;
@@ -96,12 +97,13 @@ const SubmitBtn = styled(Btn)`
 
 type AddTaskModalProps = {
   onClose: () => void;
-  onSubmit: (title: string, description: string) => void;
+  onSubmit: (title: string, description: string, labels: string[]) => void;
 };
 
 export function AddTaskModal({ onClose, onSubmit }: AddTaskModalProps) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
+  const [labels, setLabels] = useState<string[]>([]);
   const titleRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -112,7 +114,7 @@ export function AddTaskModal({ onClose, onSubmit }: AddTaskModalProps) {
     e.preventDefault();
     const t = title.trim();
     if (t) {
-      onSubmit(t, description.trim());
+      onSubmit(t, description.trim(), labels);
       onClose();
     }
   };
@@ -137,6 +139,7 @@ export function AddTaskModal({ onClose, onSubmit }: AddTaskModalProps) {
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Optional description"
           />
+          <LabelPicker value={labels} onChange={setLabels} />
           <Actions>
             <CancelBtn type="button" onClick={onClose}>
               Cancel

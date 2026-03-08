@@ -3,18 +3,42 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import type { Task } from '../../api/tasks';
 import { getHighlightSegments } from '../../utils/highlightMatch';
+import { LABEL_COLORS } from '../../constants/labelColors';
+
+const LabelStripsWrap = styled.div`
+  padding: 4px 4px 2px 4px;
+  flex-shrink: 0;
+`;
+
+const LabelStrips = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+`;
+
+const LabelStrip = styled.span<{ $color: string }>`
+  display: block;
+  width: 10px;
+  height: 4px;
+  border-radius: 2px;
+  background: ${(p) => p.$color};
+`;
+
+const CardInner = styled.div`
+  padding: 2px 8px 6px 8px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+`;
 
 const Card = styled.div<{ $isDragging?: boolean; $isPlaceholder?: boolean }>`
-  padding: 6px 8px;
   margin-top: 4px;
   font-size: 0.8rem;
   background: var(--bg-tertiary);
   border-radius: 4px;
   border-left: 3px solid var(--border);
   cursor: grab;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
   opacity: ${(p) => (p.$isPlaceholder ? 0 : p.$isDragging ? 0.5 : 1)};
   min-width: 0;
   &:active {
@@ -42,13 +66,30 @@ type SortableTaskCardProps = {
   onView: (task: Task, anchorEl: HTMLElement) => void;
 };
 
+function TaskCardLabelStrips({ labels }: { labels?: string[] }) {
+  const ids = labels?.length ? labels : [];
+  if (ids.length === 0) return null;
+  return (
+    <LabelStripsWrap>
+      <LabelStrips>
+        {ids.map((id) => (
+          <LabelStrip key={id} $color={LABEL_COLORS[id] ?? '#ccc'} />
+        ))}
+      </LabelStrips>
+    </LabelStripsWrap>
+  );
+}
+
 export function TaskCardDragPreview({ task, filterQuery }: { task: Task; filterQuery: string }) {
   const segments = getHighlightSegments(task.title, filterQuery);
   return (
     <OverlayCard>
-      {segments.map((seg, i) =>
-        seg.match ? <Highlight key={i}>{seg.text}</Highlight> : seg.text
-      )}
+      <TaskCardLabelStrips labels={task.labels} />
+      <CardInner>
+        {segments.map((seg, i) =>
+          seg.match ? <Highlight key={i}>{seg.text}</Highlight> : seg.text
+        )}
+      </CardInner>
     </OverlayCard>
   );
 }
@@ -84,9 +125,12 @@ export function SortableTaskCard({ task, filterQuery, onView }: SortableTaskCard
       }}
       title="Drag to move, click to view"
     >
-      {segments.map((seg, i) =>
-        seg.match ? <Highlight key={i}>{seg.text}</Highlight> : seg.text
-      )}
+      <TaskCardLabelStrips labels={task.labels} />
+      <CardInner>
+        {segments.map((seg, i) =>
+          seg.match ? <Highlight key={i}>{seg.text}</Highlight> : seg.text
+        )}
+      </CardInner>
     </Card>
   );
 }

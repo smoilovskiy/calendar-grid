@@ -4,6 +4,26 @@ import styled from '@emotion/styled';
 import type { Task } from '../../api/tasks';
 import { fetchActivityForTask } from '../../api/activity';
 import type { ActivityEntry } from '../../api/activity';
+import { LABEL_COLORS } from '../../constants/labelColors';
+
+const LabelStripsWrap = styled.div`
+  padding: 4px;
+  margin-bottom: 4px;
+`;
+
+const LabelStrips = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+`;
+
+const LabelStrip = styled.span<{ $color: string }>`
+  display: block;
+  width: 10px;
+  height: 4px;
+  border-radius: 2px;
+  background: ${(p) => p.$color};
+`;
 
 const PopoverBox = styled.div`
   position: fixed;
@@ -194,8 +214,19 @@ export function TaskViewPopover({ task, anchorRect, onClose, onEdit }: TaskViewP
     onEdit(task);
   };
 
+  const labelIds = task.labels?.length ? task.labels : [];
+
   const content = (
     <PopoverBox ref={boxRef} style={style} onClick={(e) => e.stopPropagation()}>
+      {labelIds.length > 0 && (
+        <LabelStripsWrap>
+          <LabelStrips>
+            {labelIds.map((id) => (
+              <LabelStrip key={id} $color={LABEL_COLORS[id] ?? '#ccc'} />
+            ))}
+          </LabelStrips>
+        </LabelStripsWrap>
+      )}
       <Header>
         <TitleText>{task.title}</TitleText>
         <IconButtons>

@@ -43,10 +43,10 @@ tasksRouter.get('/', async (req: Request, res: Response) => {
   }
   try {
     const { rows } = await pool.query(
-      'SELECT id, title, description, date, "order" FROM tasks WHERE date >= $1 AND date <= $2 ORDER BY date, "order"',
+      'SELECT id, title, description, date, "order", COALESCE(labels, \'[]\'::jsonb) AS labels FROM tasks WHERE date >= $1 AND date <= $2 ORDER BY date, "order"',
       [dateFrom, dateTo]
     );
-    res.json(rows.map((r) => ({ ...r, date: dateStr(r.date) })));
+    res.json(rows.map((r) => ({ ...r, date: dateStr(r.date), labels: Array.isArray(r.labels) ? r.labels : [] })));
   } catch (e) {
     res.status(500).json({ error: 'Failed to fetch tasks' });
   }
@@ -57,22 +57,23 @@ tasksRouter.post('/', async (req: Request, res: Response) => {
     res.status(503).json({ error: 'Database not configured' });
     return;
   }
-  const { title, date, order, description } = req.body as { title?: string; date?: string; order?: number; description?: string };
+  const { title, date, order, description, labels } = req.body as { title?: string; date?: string; order?: number; description?: string; labels?: string[] };
   if (!title || !date) {
     res.status(400).json({ error: 'title and date required' });
     return;
   }
   const orderVal = typeof order === 'number' ? order : 0;
   const descVal = description != null ? String(description).trim() : null;
+  const labelsVal = Array.isArray(labels) ? labels.filter((x): x is string => typeof x === 'string').slice(0, 10) : [];
   const userName = getUserName(req);
   try {
     const { rows } = await pool.query(
-      'INSERT INTO tasks (title, description, date, "order") VALUES ($1, $2, $3, $4) RETURNING id, title, description, date, "order"',
-      [title.trim(), descVal || null, date, orderVal]
+      'INSERT INTO tasks (title, description, date, "order", labels) VALUES ($1, $2, $3, $4, $5) RETURNING id, title, description, date, "order", COALESCE(labels, \'[]\'::jsonb) AS labels',
+      [title.trim(), descVal || null, date, orderVal, JSON.stringify(labelsVal)]
     );
     const r = rows[0];
     await logActivity(userName, 'created', r.id, r.title, { date });
-    res.status(201).json({ ...r, date: dateStr(r.date) });
+    res.status(201).json({ ...r, date: dateStr(r.date), labels: Array.isArray(r.labels) ? r.labels : [] });
   } catch (e) {
     res.status(500).json({ error: 'Failed to create task' });
   }
@@ -84,7 +85,7 @@ tasksRouter.put('/:id', async (req: Request, res: Response) => {
     return;
   }
   const id = req.params.id;
-  const { title, date, order, description } = req.body as { title?: string; date?: string; order?: number; description?: string };
+  const { title, date, order, description, labels } = req.body as { title?: string; date?: string; order?: number; description?: string; labels?: string[] };
   const updates: string[] = [];
   const values: unknown[] = [];
   let i = 1;
@@ -104,6 +105,11 @@ tasksRouter.put('/:id', async (req: Request, res: Response) => {
     updates.push(`"order" = $${i++}`);
     values.push(order);
   }
+  if (labels !== undefined) {
+    const labelsVal = Array.isArray(labels) ? labels.filter((x): x is string => typeof x === 'string').slice(0, 10) : [];
+    updates.push(`labels = $${i++}`);
+    values.push(JSON.stringify(labelsVal));
+  }
   if (updates.length === 0) {
     res.status(400).json({ error: 'No fields to update' });
     return;
@@ -112,7 +118,7 @@ tasksRouter.put('/:id', async (req: Request, res: Response) => {
   const userName = getUserName(req);
   try {
     const { rows } = await pool.query(
-      `UPDATE tasks SET ${updates.join(', ')} WHERE id = $${i} RETURNING id, title, description, date, "order"`,
+      `UPDATE tasks SET ${updates.join(', ')} WHERE id = $${i} RETURNING id, title, description, date, "order", COALESCE(labels, '[]'::jsonb) AS labels`,
       values
     );
     if (rows.length === 0) {
@@ -126,8 +132,9 @@ tasksRouter.put('/:id', async (req: Request, res: Response) => {
     if (description !== undefined) details.description = true;
     if (date !== undefined) details.date = date;
     if (order !== undefined) details.order = order;
+    if (labels !== undefined) details.labels = true;
     await logActivity(userName, action, r.id, r.title, Object.keys(details).length ? details : null);
-    res.json({ ...r, date: dateStr(r.date) });
+    res.json({ ...r, date: dateStr(r.date), labels: Array.isArray(r.labels) ? r.labels : [] });
   } catch (e) {
     res.status(500).json({ error: 'Failed to update task' });
   }
