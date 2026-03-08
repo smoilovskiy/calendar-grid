@@ -11,7 +11,20 @@ function ensureDb(): Promise<void> {
   return dbReady;
 }
 
-export default async function handler(req: VercelRequest, res: VercelResponse): Promise<void> {
-  await ensureDb();
-  app(req as unknown as import('http').IncomingMessage, res as unknown as import('http').ServerResponse);
+export default function handler(req: VercelRequest, res: VercelResponse): Promise<void> {
+  const nodeReq = req as unknown as import('http').IncomingMessage & { url?: string };
+  const nodeRes = res as unknown as import('http').ServerResponse;
+  // Vercel can pass path without /api prefix for catch-all; Express expects /api/...
+  if (nodeReq.url && !nodeReq.url.startsWith('/api')) {
+    nodeReq.url = '/api' + (nodeReq.url.startsWith('/') ? nodeReq.url : '/' + nodeReq.url);
+  }
+  return new Promise((resolve, reject) => {
+    nodeRes.once('finish', resolve);
+    nodeRes.once('error', reject);
+    ensureDb()
+      .then(() => {
+        app(nodeReq, nodeRes);
+      })
+      .catch(reject);
+  });
 }
