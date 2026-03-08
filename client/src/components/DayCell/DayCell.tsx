@@ -6,6 +6,7 @@ import type { CalendarDay } from '../../utils/calendar';
 import type { Task } from '../../api/tasks';
 import { SortableTaskCard } from '../TaskCard/SortableTaskCard';
 import { AddTaskModal } from '../AddTaskModal/AddTaskModal';
+import { EditTaskModal } from '../EditTaskModal/EditTaskModal';
 
 const Cell = styled.div<{ $isCurrentMonth: boolean }>`
   position: relative;
@@ -84,7 +85,7 @@ type DayCellProps = {
   tasks: Task[];
   filterQuery: string;
   onAddTask: (date: string, title: string, description?: string) => void;
-  onUpdateTask: (id: string, data: { title?: string; date?: string; order?: number }) => void;
+  onUpdateTask: (id: string, data: { title?: string; date?: string; order?: number; description?: string }) => void;
   onDeleteTask: (id: string) => void;
 };
 
@@ -102,6 +103,7 @@ export function DayCell({
   onDeleteTask,
 }: DayCellProps) {
   const [showAddModal, setShowAddModal] = useState(false);
+  const [editTask, setEditTask] = useState<Task | null>(null);
   const dateKey = toDateKey(day.date);
 
   const { setNodeRef, isOver } = useDroppable({ id: `cell-${dateKey}` });
@@ -113,6 +115,18 @@ export function DayCell({
 
   const handleAddSubmit = (title: string, description: string) => {
     onAddTask(dateKey, title, description || undefined);
+  };
+
+  const handleEditSave = (title: string, description: string) => {
+    if (!editTask) return;
+    onUpdateTask(editTask.id, { title, description: description || undefined });
+    setEditTask(null);
+  };
+
+  const handleEditDelete = () => {
+    if (!editTask) return;
+    onDeleteTask(editTask.id);
+    setEditTask(null);
   };
 
   return (
@@ -134,8 +148,7 @@ export function DayCell({
                 key={task.id}
                 task={task}
                 filterQuery={filterQuery}
-                onUpdate={(id, data) => onUpdateTask(id, data)}
-                onDelete={onDeleteTask}
+                onEdit={setEditTask}
               />
             ))}
         </SortableContext>
@@ -152,6 +165,14 @@ export function DayCell({
         <AddTaskModal
           onClose={() => setShowAddModal(false)}
           onSubmit={handleAddSubmit}
+        />
+      )}
+      {editTask && (
+        <EditTaskModal
+          task={editTask}
+          onClose={() => setEditTask(null)}
+          onSave={handleEditSave}
+          onDelete={handleEditDelete}
         />
       )}
     </Cell>

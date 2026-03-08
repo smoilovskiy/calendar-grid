@@ -116,7 +116,7 @@ export function CalendarGrid({ countryCode, filterQuery }: CalendarGridProps) {
     }
   }, []);
 
-  const handleUpdateTask = useCallback(async (id: string, data: { title?: string; date?: string; order?: number }) => {
+  const handleUpdateTask = useCallback(async (id: string, data: { title?: string; date?: string; order?: number; description?: string }) => {
     try {
       const updated = await updateTask(id, data);
       setTasks((prev) => prev.map((t) => (t.id === id ? updated : t)));

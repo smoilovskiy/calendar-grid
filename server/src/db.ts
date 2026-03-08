@@ -19,4 +19,15 @@ export async function initDb(): Promise<void> {
     );
   `);
   await pool.query(`ALTER TABLE tasks ADD COLUMN IF NOT EXISTS description TEXT;`);
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS activity_log (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      user_name TEXT NOT NULL,
+      action TEXT NOT NULL,
+      task_id UUID,
+      task_title TEXT,
+      details JSONB,
+      created_at TIMESTAMPTZ DEFAULT now()
+    );
+  `);
 }

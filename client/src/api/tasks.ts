@@ -1,4 +1,14 @@
+import { getStoredUserName } from '../utils/userName';
+
 const API_BASE = '/api/tasks';
+
+function apiHeaders(extra: Record<string, string> = {}): Record<string, string> {
+  return {
+    'Content-Type': 'application/json',
+    'X-User-Name': getStoredUserName(),
+    ...extra,
+  };
+}
 
 export type Task = {
   id: string;
@@ -24,7 +34,7 @@ export async function createTask(
 ): Promise<Task> {
   const res = await fetch(API_BASE, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: apiHeaders(),
     body: JSON.stringify({ title, date, order, description: description ?? null }),
   });
   if (!res.ok) throw new Error('Failed to create task');
@@ -37,7 +47,7 @@ export async function updateTask(
 ): Promise<Task> {
   const res = await fetch(`${API_BASE}/${id}`, {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
+    headers: apiHeaders(),
     body: JSON.stringify(data),
   });
   if (!res.ok) throw new Error('Failed to update task');
@@ -45,6 +55,9 @@ export async function updateTask(
 }
 
 export async function deleteTask(id: string): Promise<void> {
-  const res = await fetch(`${API_BASE}/${id}`, { method: 'DELETE' });
+  const res = await fetch(`${API_BASE}/${id}`, {
+    method: 'DELETE',
+    headers: { 'X-User-Name': getStoredUserName() },
+  });
   if (!res.ok) throw new Error('Failed to delete task');
 }

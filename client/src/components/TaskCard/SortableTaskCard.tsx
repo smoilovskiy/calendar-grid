@@ -1,4 +1,3 @@
-import { useState, useRef, useEffect } from 'react';
 import styled from '@emotion/styled';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -22,16 +21,6 @@ const Card = styled.div<{ $isDragging?: boolean }>`
   }
 `;
 
-const Input = styled.input`
-  width: 100%;
-  padding: 4px 6px;
-  font-size: 0.8rem;
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  background: var(--bg);
-  color: var(--text);
-`;
-
 const Highlight = styled.mark`
   background: #fef08a;
   color: inherit;
@@ -42,15 +31,10 @@ const Highlight = styled.mark`
 type SortableTaskCardProps = {
   task: Task;
   filterQuery: string;
-  onUpdate: (id: string, data: { title?: string }) => void;
-  onDelete: (id: string) => void;
+  onEdit: (task: Task) => void;
 };
 
-export function SortableTaskCard({ task, filterQuery, onUpdate, onDelete }: SortableTaskCardProps) {
-  const [editing, setEditing] = useState(false);
-  const [value, setValue] = useState(task.title);
-  const inputRef = useRef<HTMLInputElement>(null);
-
+export function SortableTaskCard({ task, filterQuery, onEdit }: SortableTaskCardProps) {
   const {
     attributes,
     listeners,
@@ -60,48 +44,10 @@ export function SortableTaskCard({ task, filterQuery, onUpdate, onDelete }: Sort
     isDragging,
   } = useSortable({ id: task.id, data: { task } });
 
-  useEffect(() => {
-    if (editing) inputRef.current?.focus();
-  }, [editing]);
-
-  useEffect(() => {
-    setValue(task.title);
-  }, [task.title]);
-
-  const save = () => {
-    const trimmed = value.trim();
-    if (trimmed && trimmed !== task.title) {
-      onUpdate(task.id, { title: trimmed });
-    } else if (!trimmed) {
-      onDelete(task.id);
-    } else {
-      setValue(task.title);
-    }
-    setEditing(false);
-  };
-
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
   };
-
-  if (editing) {
-    return (
-      <Input
-        ref={inputRef}
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
-        onBlur={save}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter') save();
-          if (e.key === 'Escape') {
-            setValue(task.title);
-            setEditing(false);
-          }
-        }}
-      />
-    );
-  }
 
   const segments = getHighlightSegments(task.title, filterQuery);
 
@@ -114,7 +60,7 @@ export function SortableTaskCard({ task, filterQuery, onUpdate, onDelete }: Sort
       {...listeners}
       onClick={(e) => {
         e.stopPropagation();
-        setEditing(true);
+        onEdit(task);
       }}
       title="Drag to move, click to edit"
     >
