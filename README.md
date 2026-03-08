@@ -49,6 +49,56 @@ Sign in / sign up is done via **Firebase Authentication** (email + password). On
    ```
 4. Restart the backend. The `tasks` table is created automatically on first run.
 
+### Deploy to Vercel (step by step)
+
+1. **Push the repo to GitHub**  
+   If the repo is not on GitHub yet: create a repository, add the remote, and push:
+   ```bash
+   git remote add origin https://github.com/YOUR_USERNAME/calendar-grid.git
+   git push -u origin main
+   ```
+
+2. **Create a project in Vercel**  
+   - Go to [vercel.com](https://vercel.com) and sign in (with GitHub).  
+   - **Add New…** → **Project**.  
+   - Import the **calendar-grid** repo from GitHub (if it does not appear, configure access under **Configure GitHub App**).  
+   - Click **Create** (leave Root Directory empty or `./`).
+
+3. **Database (PostgreSQL)**  
+   - In Vercel: **Storage** → **Create Database** → **Postgres** (Vercel Postgres).  
+   - After creation, open the database → **Connect** or **.env** tab and copy the connection string (e.g. `POSTGRES_URL` or `DATABASE_URL`).  
+   - If the variable is named `POSTGRES_URL`, add it in the project’s Environment Variables (step 5) as **DATABASE_URL** with the same value, because the API expects `DATABASE_URL`.
+
+4. **Firebase (for authentication)**  
+   - In [Firebase Console](https://console.firebase.google.com/): your project → **Project settings** → **Your apps** → copy the values from `firebaseConfig`.  
+   - Enable **Email/Password** under **Authentication** → **Sign-in method**.
+
+5. **Environment variables in Vercel**  
+   - Open the project in Vercel → **Settings** → **Environment Variables**.  
+   - Add these (for **Production**; you can add the same for Preview):
+
+   | Name | Value |
+   |------|--------|
+   | `DATABASE_URL` | `postgresql://...` (connection string from step 3) |
+   | `VITE_FIREBASE_API_KEY` | from Firebase Console |
+   | `VITE_FIREBASE_AUTH_DOMAIN` | from Firebase Console |
+   | `VITE_FIREBASE_PROJECT_ID` | from Firebase Console |
+   | `VITE_FIREBASE_STORAGE_BUCKET` | from Firebase Console |
+   | `VITE_FIREBASE_MESSAGING_SENDER_ID` | from Firebase Console |
+   | `VITE_FIREBASE_APP_ID` | from Firebase Console |
+
+   Save. After changing env vars, trigger a **Redeploy** (Deployments → three dots next to a deployment → Redeploy).
+
+6. **Build and deploy**  
+   - The project already uses `vercel.json`: `buildCommand: npm run build`, `outputDirectory: client/dist`, and a custom `installCommand` for the monorepo.  
+   - Click **Deploy** (or a new deployment will run automatically on push to `main`).  
+   - If the build fails: check **Settings** → **General** → **Node.js Version** (use **22.x** if possible).
+
+7. **After the first deploy**  
+   - Open the deployment URL (e.g. `https://your-project.vercel.app`).  
+   - The `tasks` and `activity_log` tables are created on first API request.  
+   - In Firebase Console → **Authentication** → **Settings** → **Authorized domains**, add your Vercel domain (e.g. `your-project.vercel.app`) so sign-in works.
+
 ## Scripts
 
 ```bash

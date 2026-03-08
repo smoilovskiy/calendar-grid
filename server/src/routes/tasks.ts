@@ -46,7 +46,7 @@ tasksRouter.get('/', async (req: Request, res: Response) => {
       'SELECT id, title, description, date, "order", COALESCE(labels, \'[]\'::jsonb) AS labels FROM tasks WHERE date >= $1 AND date <= $2 ORDER BY date, "order"',
       [dateFrom, dateTo]
     );
-    res.json(rows.map((r) => ({ ...r, date: dateStr(r.date), labels: Array.isArray(r.labels) ? r.labels : [] })));
+    res.json(rows.map((r: { date: Date; labels?: unknown }) => ({ ...r, date: dateStr(r.date), labels: Array.isArray(r.labels) ? r.labels : [] })));
   } catch (e) {
     res.status(500).json({ error: 'Failed to fetch tasks' });
   }

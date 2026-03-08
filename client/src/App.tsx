@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 import styled from '@emotion/styled';
 import { ThemeProvider } from './theme/ThemeContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
@@ -8,8 +8,6 @@ import { FilterPopover } from './components/FilterPopover/FilterPopover';
 import { AuthModal } from './components/AuthModal/AuthModal';
 import { CalendarGrid } from './components/CalendarGrid/CalendarGrid';
 import { getCountryFromLocale } from './utils/locale';
-import { getStoredUserName, setStoredUserName } from './utils/userName';
-
 const TopBar = styled.div`
   position: fixed;
   top: 16px;
@@ -18,19 +16,6 @@ const TopBar = styled.div`
   align-items: center;
   gap: 12px;
   z-index: 10;
-`;
-
-const UserNameInput = styled.input`
-  width: 120px;
-  padding: 6px 8px;
-  font-size: 0.8rem;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  background: var(--bg);
-  color: var(--text);
-  &::placeholder {
-    color: var(--text-muted);
-  }
 `;
 
 const AuthBtn = styled.button`
@@ -67,14 +52,7 @@ function TopBarContent({
   setFilterQuery: (v: string) => void;
 }) {
   const { user, loading, signOut } = useAuth();
-  const [userName, setUserName] = useState(() => getStoredUserName());
   const [showAuthModal, setShowAuthModal] = useState(false);
-
-  const handleUserNameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const v = e.target.value;
-    setUserName(v);
-    setStoredUserName(v);
-  }, []);
 
   if (loading) {
     return (
@@ -97,18 +75,9 @@ function TopBarContent({
             </AuthBtn>
           </>
         ) : (
-          <>
-            <UserNameInput
-              type="text"
-              value={userName}
-              onChange={handleUserNameChange}
-              placeholder="Your name"
-              title="Used in activity log"
-            />
-            <AuthBtn type="button" onClick={() => setShowAuthModal(true)}>
-              Sign in
-            </AuthBtn>
-          </>
+          <AuthBtn type="button" onClick={() => setShowAuthModal(true)}>
+            Sign in
+          </AuthBtn>
         )}
         <CountrySelect value={country} onChange={setCountry} />
         <FilterPopover value={filterQuery} onChange={setFilterQuery} />

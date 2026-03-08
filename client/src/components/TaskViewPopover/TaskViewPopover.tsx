@@ -204,7 +204,7 @@ export function TaskViewPopover({ task, anchorRect, onClose, onEdit }: TaskViewP
     left: Math.max(8, Math.min(anchorRect.left, window.innerWidth - 280)),
     top: anchorRect.bottom + 4,
   };
-  if (style.top! + 300 > window.innerHeight) {
+  if (Number(style.top) + 300 > window.innerHeight) {
     style.top = undefined;
     style.bottom = window.innerHeight - anchorRect.top + 4;
   }

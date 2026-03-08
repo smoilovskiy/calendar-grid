@@ -18,7 +18,7 @@ activityRouter.get('/', async (req: Request, res: Response) => {
          FROM activity_log ORDER BY created_at DESC LIMIT $1`;
     const params = taskId ? [taskId, limit] : [limit];
     const { rows } = await pool.query(query, params);
-    res.json(rows.map((r) => ({ ...r, created_at: r.created_at?.toISOString() ?? null })));
+    res.json(rows.map((r: { created_at?: Date }) => ({ ...r, created_at: r.created_at?.toISOString() ?? null })));
   } catch (e) {
     res.status(500).json({ error: 'Failed to fetch activity' });
   }
