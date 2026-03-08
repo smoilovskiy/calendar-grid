@@ -2,16 +2,19 @@ import { useState, useEffect, useCallback } from 'react';
 import styled from '@emotion/styled';
 import {
   DndContext,
+  DragOverlay,
   PointerSensor,
   KeyboardSensor,
   useSensor,
   useSensors,
   type DragEndEvent,
+  type DragStartEvent,
 } from '@dnd-kit/core';
 import { useHolidays } from '../../hooks/useHolidays';
 import { getCalendarDays, getDayNames } from '../../utils/calendar';
 import { getWeekStartForCountry } from '../../utils/weekStartByCountry';
 import { DayCell } from '../DayCell/DayCell';
+import { TaskCardDragPreview } from '../TaskCard/SortableTaskCard';
 import { fetchTasks, createTask, updateTask, deleteTask } from '../../api/tasks';
 import type { Task } from '../../api/tasks';
 import { dateKey } from '../../utils/dateKey';
@@ -84,6 +87,7 @@ export function CalendarGrid({ countryCode, filterQuery }: CalendarGridProps) {
   const weekStart = getWeekStartForCountry(countryCode);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [activeTask, setActiveTask] = useState<Task | null>(null);
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
   const { getHoliday } = useHolidays(year, countryCode);
@@ -145,8 +149,14 @@ export function CalendarGrid({ countryCode, filterQuery }: CalendarGridProps) {
     useSensor(KeyboardSensor)
   );
 
+  const handleDragStart = useCallback((event: DragStartEvent) => {
+    const task = event.active.data.current?.task as Task | undefined;
+    if (task) setActiveTask(task);
+  }, []);
+
   const handleDragEnd = useCallback(
     (event: DragEndEvent) => {
+      setActiveTask(null);
       const { active, over } = event;
       if (!over) return;
       const draggedTask = active.data.current?.task as Task | undefined;
@@ -191,7 +201,7 @@ export function CalendarGrid({ countryCode, filterQuery }: CalendarGridProps) {
         </NavButton>
       </Header>
 
-      <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+      <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
         <Grid>
           {dayNames.map((name) => (
             <DayHeader key={name}>{name}</DayHeader>
@@ -209,6 +219,11 @@ export function CalendarGrid({ countryCode, filterQuery }: CalendarGridProps) {
             />
           ))}
         </Grid>
+        <DragOverlay dropAnimation={null}>
+          {activeTask ? (
+            <TaskCardDragPreview task={activeTask} filterQuery={filterQuery} />
+          ) : null}
+        </DragOverlay>
       </DndContext>
     </Container>
   );
