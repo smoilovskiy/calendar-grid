@@ -39,7 +39,7 @@ const OverlayCard = styled(Card)`
 type SortableTaskCardProps = {
   task: Task;
   filterQuery: string;
-  onEdit: (task: Task) => void;
+  onView: (task: Task, anchorEl: HTMLElement) => void;
 };
 
 export function TaskCardDragPreview({ task, filterQuery }: { task: Task; filterQuery: string }) {
@@ -53,7 +53,7 @@ export function TaskCardDragPreview({ task, filterQuery }: { task: Task; filterQ
   );
 }
 
-export function SortableTaskCard({ task, filterQuery, onEdit }: SortableTaskCardProps) {
+export function SortableTaskCard({ task, filterQuery, onView }: SortableTaskCardProps) {
   const {
     attributes,
     listeners,
@@ -80,9 +80,9 @@ export function SortableTaskCard({ task, filterQuery, onEdit }: SortableTaskCard
       {...listeners}
       onClick={(e) => {
         e.stopPropagation();
-        onEdit(task);
+        onView(task, e.currentTarget as HTMLElement);
       }}
-      title="Drag to move, click to edit"
+      title="Drag to move, click to view"
     >
       {segments.map((seg, i) =>
         seg.match ? <Highlight key={i}>{seg.text}</Highlight> : seg.text

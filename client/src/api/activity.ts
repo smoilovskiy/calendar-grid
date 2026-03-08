@@ -13,3 +13,9 @@ export async function fetchActivity(limit: number = 50): Promise<ActivityEntry[]
   if (!res.ok) throw new Error('Failed to fetch activity');
   return res.json();
 }
+
+export async function fetchActivityForTask(taskId: string, limit: number = 20): Promise<ActivityEntry[]> {
+  const res = await fetch(`/api/activity?taskId=${encodeURIComponent(taskId)}&limit=${Math.min(limit, 100)}`);
+  if (!res.ok) throw new Error('Failed to fetch activity');
+  return res.json();
+}

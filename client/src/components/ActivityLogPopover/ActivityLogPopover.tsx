@@ -11,13 +11,14 @@ const Button = styled.button`
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
+  gap: 6px;
   height: 40px;
-  padding: 0;
+  padding: 0 12px;
   border: 1px solid var(--border);
   border-radius: 6px;
   background: var(--bg);
   color: var(--text);
+  font-size: 0.875rem;
   cursor: pointer;
   &:hover {
     background: var(--hover);
@@ -139,9 +140,10 @@ export function ActivityLogPopover() {
         onClick={() => setOpen((o) => !o)}
         aria-label="Activity log"
         aria-expanded={open}
-        title="Activity log"
+        title="View history of changes (who created, moved, edited tasks)"
       >
         <HistoryIcon />
+        <span>Activity</span>
       </Button>
       {open && (
         <Popover onClick={(e) => e.stopPropagation()}>

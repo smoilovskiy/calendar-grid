@@ -7,6 +7,7 @@ import type { Task } from '../../api/tasks';
 import { SortableTaskCard } from '../TaskCard/SortableTaskCard';
 import { AddTaskModal } from '../AddTaskModal/AddTaskModal';
 import { EditTaskModal } from '../EditTaskModal/EditTaskModal';
+import { TaskViewPopover } from '../TaskViewPopover/TaskViewPopover';
 
 const Cell = styled.div<{ $isCurrentMonth: boolean }>`
   position: relative;
@@ -103,6 +104,8 @@ export function DayCell({
   onDeleteTask,
 }: DayCellProps) {
   const [showAddModal, setShowAddModal] = useState(false);
+  const [viewTask, setViewTask] = useState<Task | null>(null);
+  const [viewAnchorRect, setViewAnchorRect] = useState<DOMRect | null>(null);
   const [editTask, setEditTask] = useState<Task | null>(null);
   const dateKey = toDateKey(day.date);
 
@@ -148,7 +151,10 @@ export function DayCell({
                 key={task.id}
                 task={task}
                 filterQuery={filterQuery}
-                onEdit={setEditTask}
+                onView={(task, anchorEl) => {
+                  setViewTask(task);
+                  setViewAnchorRect(anchorEl.getBoundingClientRect());
+                }}
               />
             ))}
         </SortableContext>
@@ -165,6 +171,14 @@ export function DayCell({
         <AddTaskModal
           onClose={() => setShowAddModal(false)}
           onSubmit={handleAddSubmit}
+        />
+      )}
+      {viewTask && viewAnchorRect && (
+        <TaskViewPopover
+          task={viewTask}
+          anchorRect={viewAnchorRect}
+          onClose={() => { setViewTask(null); setViewAnchorRect(null); }}
+          onEdit={(t) => { setViewTask(null); setViewAnchorRect(null); setEditTask(t); }}
         />
       )}
       {editTask && (
