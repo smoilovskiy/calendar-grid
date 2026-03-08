@@ -107,9 +107,9 @@ export function CalendarGrid({ countryCode, filterQuery }: CalendarGridProps) {
     loadTasks();
   }, [loadTasks]);
 
-  const handleAddTask = useCallback(async (date: string, title: string) => {
+  const handleAddTask = useCallback(async (date: string, title: string, description?: string) => {
     try {
-      const created = await createTask(title, date, 0);
+      const created = await createTask(title, date, 0, description);
       setTasks((prev) => [...prev, created]);
     } catch {
       // ignore

@@ -18,4 +18,5 @@ export async function initDb(): Promise<void> {
       "order" INT NOT NULL DEFAULT 0
     );
   `);
+  await pool.query(`ALTER TABLE tasks ADD COLUMN IF NOT EXISTS description TEXT;`);
 }

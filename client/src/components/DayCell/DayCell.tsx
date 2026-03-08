@@ -5,10 +5,13 @@ import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import type { CalendarDay } from '../../utils/calendar';
 import type { Task } from '../../api/tasks';
 import { SortableTaskCard } from '../TaskCard/SortableTaskCard';
+import { AddTaskModal } from '../AddTaskModal/AddTaskModal';
 
 const Cell = styled.div<{ $isCurrentMonth: boolean }>`
+  position: relative;
   min-height: 100px;
   padding: 8px;
+  padding-bottom: 32px;
   border-right: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
   background: ${(p) => (p.$isCurrentMonth ? 'var(--bg)' : 'var(--bg-secondary)')};
@@ -18,22 +21,29 @@ const Cell = styled.div<{ $isCurrentMonth: boolean }>`
 
 const TopRow = styled.div`
   flex-shrink: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  min-width: 0;
+  overflow: hidden;
 `;
 
 const DayNumber = styled.span<{ $isCurrentMonth: boolean }>`
   font-size: 0.875rem;
   font-weight: 500;
   color: ${(p) => (p.$isCurrentMonth ? 'var(--text)' : 'var(--text-muted)')};
+  flex-shrink: 0;
 `;
 
-const HolidayLabel = styled.div`
+const HolidayLabel = styled.span`
   font-size: 0.7rem;
-  color: var(--text-muted);
-  margin-top: 4px;
+  color: #c24141;
   line-height: 1.2;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  min-width: 0;
+  flex: 1 1 0;
 `;
 
 const TasksArea = styled.div<{ $isOver?: boolean }>`
@@ -45,14 +55,21 @@ const TasksArea = styled.div<{ $isOver?: boolean }>`
   background: ${(p) => (p.$isOver ? 'var(--hover)' : 'transparent')};
 `;
 
-const AddTaskBtn = styled.button`
-  width: 100%;
-  margin-top: 4px;
-  padding: 4px;
-  font-size: 0.75rem;
-  border: 1px dashed var(--border);
+const AddTaskIconBtn = styled.button`
+  position: absolute;
+  right: 6px;
+  bottom: 6px;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  line-height: 1;
+  border: 1px solid var(--border);
   border-radius: 4px;
-  background: transparent;
+  background: var(--bg);
   color: var(--text-muted);
   cursor: pointer;
   &:hover {
@@ -61,23 +78,12 @@ const AddTaskBtn = styled.button`
   }
 `;
 
-const AddTaskInput = styled.input`
-  width: 100%;
-  margin-top: 4px;
-  padding: 4px 6px;
-  font-size: 0.8rem;
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  background: var(--bg);
-  color: var(--text);
-`;
-
 type DayCellProps = {
   day: CalendarDay;
   holidayName?: string | null;
   tasks: Task[];
   filterQuery: string;
-  onAddTask: (date: string, title: string) => void;
+  onAddTask: (date: string, title: string, description?: string) => void;
   onUpdateTask: (id: string, data: { title?: string; date?: string; order?: number }) => void;
   onDeleteTask: (id: string) => void;
 };
@@ -95,20 +101,18 @@ export function DayCell({
   onUpdateTask,
   onDeleteTask,
 }: DayCellProps) {
-  const [adding, setAdding] = useState(false);
-  const [newTitle, setNewTitle] = useState('');
+  const [showAddModal, setShowAddModal] = useState(false);
   const dateKey = toDateKey(day.date);
 
   const { setNodeRef, isOver } = useDroppable({ id: `cell-${dateKey}` });
   const taskIds = tasks.map((t) => t.id);
 
-  const submitAdd = () => {
-    const t = newTitle.trim();
-    if (t) {
-      onAddTask(dateKey, t);
-      setNewTitle('');
-    }
-    setAdding(false);
+  const holidayDisplay = holidayName && holidayName.length > 20
+    ? `${holidayName.slice(0, 20)}…`
+    : holidayName ?? '';
+
+  const handleAddSubmit = (title: string, description: string) => {
+    onAddTask(dateKey, title, description || undefined);
   };
 
   return (
@@ -117,7 +121,9 @@ export function DayCell({
         <DayNumber $isCurrentMonth={day.isCurrentMonth}>
           {day.dayOfMonth}
         </DayNumber>
-        {holidayName && <HolidayLabel title={holidayName}>{holidayName}</HolidayLabel>}
+        {holidayName && (
+          <HolidayLabel title={holidayName}>{holidayDisplay}</HolidayLabel>
+        )}
       </TopRow>
       <TasksArea ref={setNodeRef} $isOver={isOver}>
         <SortableContext items={taskIds} strategy={verticalListSortingStrategy}>
@@ -133,27 +139,21 @@ export function DayCell({
               />
             ))}
         </SortableContext>
-        {adding ? (
-          <AddTaskInput
-            autoFocus
-            value={newTitle}
-            onChange={(e) => setNewTitle(e.target.value)}
-            onBlur={submitAdd}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') submitAdd();
-              if (e.key === 'Escape') {
-                setNewTitle('');
-                setAdding(false);
-              }
-            }}
-            placeholder="Task title..."
-          />
-        ) : (
-          <AddTaskBtn type="button" onClick={() => setAdding(true)}>
-            + Add task
-          </AddTaskBtn>
-        )}
+        <AddTaskIconBtn
+          type="button"
+          onClick={() => setShowAddModal(true)}
+          title="+ Add task"
+          aria-label="Add task"
+        >
+          +
+        </AddTaskIconBtn>
       </TasksArea>
+      {showAddModal && (
+        <AddTaskModal
+          onClose={() => setShowAddModal(false)}
+          onSubmit={handleAddSubmit}
+        />
+      )}
     </Cell>
   );
 }

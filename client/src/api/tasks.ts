@@ -3,6 +3,7 @@ const API_BASE = '/api/tasks';
 export type Task = {
   id: string;
   title: string;
+  description?: string | null;
   date: string;
   order: number;
 };
@@ -18,12 +19,13 @@ export async function fetchTasks(dateFrom: string, dateTo: string): Promise<Task
 export async function createTask(
   title: string,
   date: string,
-  order: number = 0
+  order: number = 0,
+  description?: string
 ): Promise<Task> {
   const res = await fetch(API_BASE, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ title, date, order }),
+    body: JSON.stringify({ title, date, order, description: description ?? null }),
   });
   if (!res.ok) throw new Error('Failed to create task');
   return res.json();
@@ -31,7 +33,7 @@ export async function createTask(
 
 export async function updateTask(
   id: string,
-  data: { title?: string; date?: string; order?: number }
+  data: { title?: string; date?: string; order?: number; description?: string }
 ): Promise<Task> {
   const res = await fetch(`${API_BASE}/${id}`, {
     method: 'PUT',

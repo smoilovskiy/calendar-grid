@@ -23,7 +23,7 @@ tasksRouter.get('/', async (req: Request, res: Response) => {
   }
   try {
     const { rows } = await pool.query(
-      'SELECT id, title, date, "order" FROM tasks WHERE date >= $1 AND date <= $2 ORDER BY date, "order"',
+      'SELECT id, title, description, date, "order" FROM tasks WHERE date >= $1 AND date <= $2 ORDER BY date, "order"',
       [dateFrom, dateTo]
     );
     res.json(rows.map((r) => ({ ...r, date: dateStr(r.date) })));
@@ -37,16 +37,17 @@ tasksRouter.post('/', async (req: Request, res: Response) => {
     res.status(503).json({ error: 'Database not configured' });
     return;
   }
-  const { title, date, order } = req.body as { title?: string; date?: string; order?: number };
+  const { title, date, order, description } = req.body as { title?: string; date?: string; order?: number; description?: string };
   if (!title || !date) {
     res.status(400).json({ error: 'title and date required' });
     return;
   }
   const orderVal = typeof order === 'number' ? order : 0;
+  const descVal = description != null ? String(description).trim() : null;
   try {
     const { rows } = await pool.query(
-      'INSERT INTO tasks (title, date, "order") VALUES ($1, $2, $3) RETURNING id, title, date, "order"',
-      [title.trim(), date, orderVal]
+      'INSERT INTO tasks (title, description, date, "order") VALUES ($1, $2, $3, $4) RETURNING id, title, description, date, "order"',
+      [title.trim(), descVal || null, date, orderVal]
     );
     const r = rows[0];
     res.status(201).json({ ...r, date: dateStr(r.date) });
@@ -61,13 +62,17 @@ tasksRouter.put('/:id', async (req: Request, res: Response) => {
     return;
   }
   const id = req.params.id;
-  const { title, date, order } = req.body as { title?: string; date?: string; order?: number };
+  const { title, date, order, description } = req.body as { title?: string; date?: string; order?: number; description?: string };
   const updates: string[] = [];
   const values: unknown[] = [];
   let i = 1;
   if (title !== undefined) {
     updates.push(`title = $${i++}`);
     values.push(title.trim());
+  }
+  if (description !== undefined) {
+    updates.push(`description = $${i++}`);
+    values.push(description === '' ? null : String(description).trim());
   }
   if (date !== undefined) {
     updates.push(`date = $${i++}`);
@@ -84,7 +89,7 @@ tasksRouter.put('/:id', async (req: Request, res: Response) => {
   values.push(id);
   try {
     const { rows } = await pool.query(
-      `UPDATE tasks SET ${updates.join(', ')} WHERE id = $${i} RETURNING id, title, date, "order"`,
+      `UPDATE tasks SET ${updates.join(', ')} WHERE id = $${i} RETURNING id, title, description, date, "order"`,
       values
     );
     if (rows.length === 0) {
