@@ -35,6 +35,10 @@ npm run dev
 
 For task persistence, set `DATABASE_URL` (PostgreSQL). If unset, the app runs but tasks are not saved (API returns 503).
 
+### Authentication (Firebase)
+
+Sign in / sign up is done via **Firebase Authentication** (email + password). On sign up, a **name** is required; it is stored as the user’s display name and used in the activity log. The client sends the current user’s name (or email) in the `X-User-Name` header so that `activity_log` records who created, updated, moved or deleted tasks. Configure Firebase in `client/.env` (see `client/.env.example`) and enable the Email/Password sign-in method in the [Firebase Console](https://console.firebase.google.com/).
+
 ### Connecting Neon / Vercel Postgres (local backend)
 
 1. In [Vercel](https://vercel.com): open your project → **Storage** → **Create Database** → **Postgres** (Vercel Postgres is powered by Neon).

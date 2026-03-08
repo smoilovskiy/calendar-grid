@@ -7,21 +7,21 @@ import type { ActivityEntry } from '../../api/activity';
 import { LABEL_COLORS } from '../../constants/labelColors';
 
 const LabelStripsWrap = styled.div`
-  padding: 4px;
+  padding: 5px;
   margin-bottom: 4px;
 `;
 
 const LabelStrips = styled.div`
   display: flex;
   flex-wrap: wrap;
-  gap: 3px;
+  gap: 4px;
 `;
 
 const LabelStrip = styled.span<{ $color: string }>`
   display: block;
-  width: 10px;
-  height: 4px;
-  border-radius: 2px;
+  width: 16px;
+  height: 6px;
+  border-radius: 3px;
   background: ${(p) => p.$color};
 `;
 
