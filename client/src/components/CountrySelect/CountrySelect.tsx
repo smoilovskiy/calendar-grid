@@ -3,14 +3,16 @@ import styled from '@emotion/styled';
 import { fetchCountries } from '../../api/countries';
 
 const Select = styled.select`
-  padding: 8px 12px;
+  height: 32px;
+  padding: 0 10px;
   font-size: 0.875rem;
+  line-height: 1;
   border: 1px solid var(--border);
   border-radius: 6px;
   background: var(--bg);
   color: var(--text);
   cursor: pointer;
-  min-width: 160px;
+  min-width: 150px;
   &:hover {
     background: var(--hover);
   }

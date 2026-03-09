@@ -8,19 +8,47 @@ import { FilterPopover } from './components/FilterPopover/FilterPopover';
 import { AuthModal } from './components/AuthModal/AuthModal';
 import { CalendarGrid } from './components/CalendarGrid/CalendarGrid';
 import { getCountryFromLocale } from './utils/locale';
-const TopBar = styled.div`
-  position: fixed;
-  top: 16px;
-  right: 16px;
+
+const Page = styled.div`
+  min-height: 100vh;
+  background: var(--bg);
+`;
+
+const TopBar = styled.header`
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  width: 100%;
+  background: linear-gradient(90deg, #ffefba, #ffe08a);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+
+  html[data-theme='dark'] & {
+    background: linear-gradient(90deg, #4b3b1a, #3a3017);
+  }
+`;
+
+const TopBarInner = styled.div`
+  padding: 6px 16px;
   display: flex;
   align-items: center;
-  gap: 12px;
-  z-index: 10;
+  justify-content: flex-end;
+  gap: 8px;
+`;
+
+const TopBarControls = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 6px;
 `;
 
 const AuthBtn = styled.button`
-  padding: 6px 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 32px;
+  padding: 0 10px;
   font-size: 0.8rem;
+  line-height: 1;
   border: 1px solid var(--border);
   border-radius: 6px;
   background: var(--bg);
@@ -33,6 +61,7 @@ const AuthBtn = styled.button`
 
 const UserEmail = styled.span`
   font-size: 0.8rem;
+  line-height: 1;
   color: var(--text-muted);
   max-width: 140px;
   overflow: hidden;
@@ -57,9 +86,13 @@ function TopBarContent({
   if (loading) {
     return (
       <TopBar>
-        <CountrySelect value={country} onChange={setCountry} />
-        <FilterPopover value={filterQuery} onChange={setFilterQuery} />
-        <ThemeToggle />
+        <TopBarInner>
+          <TopBarControls>
+            <CountrySelect value={country} onChange={setCountry} />
+            <FilterPopover value={filterQuery} onChange={setFilterQuery} />
+            <ThemeToggle />
+          </TopBarControls>
+        </TopBarInner>
       </TopBar>
     );
   }
@@ -67,21 +100,25 @@ function TopBarContent({
   return (
     <>
       <TopBar>
-        {user ? (
-          <>
-            <UserEmail title={user.email ?? undefined}>{user.email}</UserEmail>
-            <AuthBtn type="button" onClick={() => signOut()}>
-              Sign out
-            </AuthBtn>
-          </>
-        ) : (
-          <AuthBtn type="button" onClick={() => setShowAuthModal(true)}>
-            Sign in
-          </AuthBtn>
-        )}
-        <CountrySelect value={country} onChange={setCountry} />
-        <FilterPopover value={filterQuery} onChange={setFilterQuery} />
-        <ThemeToggle />
+        <TopBarInner>
+          <TopBarControls>
+            {user ? (
+              <>
+                <UserEmail title={user.email ?? undefined}>{user.email}</UserEmail>
+                <AuthBtn type="button" onClick={() => signOut()}>
+                  Sign out
+                </AuthBtn>
+              </>
+            ) : (
+              <AuthBtn type="button" onClick={() => setShowAuthModal(true)}>
+                Sign in
+              </AuthBtn>
+            )}
+            <CountrySelect value={country} onChange={setCountry} />
+            <FilterPopover value={filterQuery} onChange={setFilterQuery} />
+            <ThemeToggle />
+          </TopBarControls>
+        </TopBarInner>
       </TopBar>
       {showAuthModal && (
         <AuthModal onClose={() => setShowAuthModal(false)} />
@@ -97,13 +134,15 @@ function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <TopBarContent
-          country={country}
-          setCountry={setCountry}
-          filterQuery={filterQuery}
-          setFilterQuery={setFilterQuery}
-        />
-        <CalendarGrid countryCode={country} filterQuery={filterQuery} />
+        <Page>
+          <TopBarContent
+            country={country}
+            setCountry={setCountry}
+            filterQuery={filterQuery}
+            setFilterQuery={setFilterQuery}
+          />
+          <CalendarGrid countryCode={country} filterQuery={filterQuery} />
+        </Page>
       </AuthProvider>
     </ThemeProvider>
   );
