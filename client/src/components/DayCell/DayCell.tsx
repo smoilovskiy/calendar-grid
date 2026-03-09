@@ -42,6 +42,9 @@ const DayNumber = styled.span<{ $isCurrentMonth: boolean }>`
 const HolidayLabel = styled.span`
   font-size: 0.7rem;
   color: #c24141;
+  background: rgba(220, 38, 38, 0.08);
+  padding: 1px 4px;
+  border-radius: 4px;
   line-height: 1.2;
   overflow: hidden;
   text-overflow: ellipsis;
