@@ -197,6 +197,13 @@ export function CalendarGrid({ countryCode, filterQuery }: CalendarGridProps) {
       }
 
       if (draggedTask.date === targetDate && draggedTask.order === targetOrder) return;
+      // Optimistic local update so the card stays in the dropped cell immediately
+      setTasks((prev) =>
+        prev.map((t) =>
+          t.id === draggedTask.id ? { ...t, date: targetDate, order: targetOrder } : t
+        )
+      );
+      // Persist change on the server
       handleUpdateTask(draggedTask.id, { date: targetDate, order: targetOrder });
     },
     [tasks, handleUpdateTask]
