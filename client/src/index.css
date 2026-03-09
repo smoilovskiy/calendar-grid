@@ -5,19 +5,21 @@
 :root,
 [data-theme='light'] {
   --bg: #fff;
-  --bg-secondary: #fafafa;
+  --bg-secondary: #f4f4f6;
   --bg-tertiary: #f8f9fa;
+  --card: #ffffff;
   --text: #333;
   --text-muted: #999;
   --border: #e0e0e0;
-  --border-light: #eee;
+  --border-light: #ffffff;
   --hover: #f5f5f5;
 }
 
 [data-theme='dark'] {
   --bg: #1a1a1a;
-  --bg-secondary: #242424;
-  --bg-tertiary: #2a2a2a;
+  --bg-secondary: #202125;
+  --bg-tertiary: #2a2b30;
+   --card: #2a2b30;
   --text: #eee;
   --text-muted: #999;
   --border: #444;
