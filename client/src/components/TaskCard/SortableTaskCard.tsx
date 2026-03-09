@@ -25,7 +25,7 @@ const LabelStrip = styled.span<{ $color: string }>`
 `;
 
 const CardInner = styled.div`
-  padding: 2px 8px 6px 8px;
+  padding: 2px 6px 4px 6px;
   font-size: 0.8rem;
   line-height: 1.2;
   white-space: normal;
