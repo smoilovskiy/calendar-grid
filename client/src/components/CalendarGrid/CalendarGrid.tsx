@@ -172,7 +172,27 @@ export function CalendarGrid({ countryCode, filterQuery }: CalendarGridProps) {
         const targetTask = tasks.find((t) => t.id === over.id);
         if (!targetTask) return;
         targetDate = targetTask.date;
-        targetOrder = targetTask.order + 1;
+        // When reordering within the same day, choose order based on direction:
+        // - dragging above target → place just before (order - 1)
+        // - dragging below target → place just after (order + 1)
+        if (targetDate === draggedTask.date) {
+          const sameDay = tasks
+            .filter((t) => t.date === targetDate)
+            .sort((a, b) => a.order - b.order);
+          const fromIndex = sameDay.findIndex((t) => t.id === draggedTask.id);
+          const toIndex = sameDay.findIndex((t) => t.id === targetTask.id);
+          if (fromIndex === -1 || toIndex === -1) return;
+          if (toIndex < fromIndex) {
+            targetOrder = targetTask.order - 1;
+          } else if (toIndex > fromIndex) {
+            targetOrder = targetTask.order + 1;
+          } else {
+            return;
+          }
+        } else {
+          // Moving to a different day: insert after the target task
+          targetOrder = targetTask.order + 1;
+        }
       }
 
       if (draggedTask.date === targetDate && draggedTask.order === targetOrder) return;
