@@ -28,7 +28,7 @@ export function getCalendarDays(year: number, month: number, weekStart: 'sunday'
 
   for (let i = 0; i < totalCells; i++) {
     const cellIndex = i - startOffset;
-    const date = new Date(year, month, cellIndex);
+    const date = new Date(year, month, 1 + cellIndex);
     days.push({
       date,
       dayOfMonth: date.getDate(),
