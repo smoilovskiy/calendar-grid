@@ -12,11 +12,10 @@ import { TaskViewPopover } from '../TaskViewPopover/TaskViewPopover';
 const Cell = styled.div<{ $isCurrentMonth: boolean }>`
   position: relative;
   min-height: 100px;
-  padding: 8px;
-  padding-bottom: 32px;
-  border-right: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
-  background: ${(p) => (p.$isCurrentMonth ? 'var(--bg)' : 'var(--bg-secondary)')};
+  padding: 8px 8px 32px 4px;
+  border-right: 1px solid var(--border-light);
+  border-bottom: 1px solid var(--border-light);
+  background: ${(p) => (p.$isCurrentMonth ? 'var(--bg-secondary)' : 'var(--bg-tertiary)')};
   display: flex;
   flex-direction: column;
 `;
@@ -25,16 +24,19 @@ const TopRow = styled.div`
   flex-shrink: 0;
   display: flex;
   align-items: baseline;
-  gap: 6px;
+  gap: 2px;
   min-width: 0;
   overflow: hidden;
 `;
 
 const DayNumber = styled.span<{ $isCurrentMonth: boolean }>`
+  display: inline-block;
+  width: 22px;
   font-size: 0.875rem;
   font-weight: 500;
   color: ${(p) => (p.$isCurrentMonth ? 'var(--text)' : 'var(--text-muted)')};
   flex-shrink: 0;
+  text-align: left;
 `;
 
 const HolidayLabel = styled.span`
@@ -51,7 +53,7 @@ const HolidayLabel = styled.span`
 const TasksArea = styled.div<{ $isOver?: boolean }>`
   flex: 1;
   min-height: 0;
-  margin-top: 6px;
+  margin-top: 2px;
   min-height: 40px;
   border-radius: 4px;
   background: ${(p) => (p.$isOver ? 'var(--hover)' : 'transparent')};

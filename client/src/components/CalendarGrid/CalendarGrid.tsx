@@ -25,7 +25,7 @@ const MONTH_NAMES = [
 ];
 
 const Container = styled.div`
-  max-width: 900px;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 24px;
 `;
@@ -60,9 +60,10 @@ const NavButton = styled.button`
 const Grid = styled.div`
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  border: 1px solid var(--border);
   border-radius: 8px;
   overflow: hidden;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-light);
   & > *:nth-of-type(7n) {
     border-right: none;
   }
@@ -196,6 +197,13 @@ export function CalendarGrid({ countryCode, filterQuery }: CalendarGridProps) {
       }
 
       if (draggedTask.date === targetDate && draggedTask.order === targetOrder) return;
+      // Optimistic local update so the card stays in the dropped cell immediately
+      setTasks((prev) =>
+        prev.map((t) =>
+          t.id === draggedTask.id ? { ...t, date: targetDate, order: targetOrder } : t
+        )
+      );
+      // Persist change on the server
       handleUpdateTask(draggedTask.id, { date: targetDate, order: targetOrder });
     },
     [tasks, handleUpdateTask]

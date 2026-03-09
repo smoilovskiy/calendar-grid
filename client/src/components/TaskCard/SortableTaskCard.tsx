@@ -25,19 +25,21 @@ const LabelStrip = styled.span<{ $color: string }>`
 `;
 
 const CardInner = styled.div`
-  padding: 2px 8px 6px 8px;
+  padding: 2px 6px 4px 6px;
+  font-size: 0.8rem;
+  line-height: 1.2;
+  white-space: normal;
+  word-break: break-word;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
   min-width: 0;
 `;
 
 const Card = styled.div<{ $isDragging?: boolean; $isPlaceholder?: boolean }>`
-  margin-top: 4px;
+  margin-top: 2px;
   font-size: 0.8rem;
-  background: var(--bg-tertiary);
+  background: var(--card);
   border-radius: 4px;
-  border-left: 3px solid var(--border);
+  border: 1px solid var(--border-light);
   cursor: grab;
   opacity: ${(p) => (p.$isPlaceholder ? 0 : p.$isDragging ? 0.5 : 1)};
   min-width: 0;
